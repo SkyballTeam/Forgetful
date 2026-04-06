@@ -19,6 +19,9 @@ declare global {
 
 function App() {
   const [loading, setLoading] = useState(false);
+  const [premiumKey, setPremiumKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
