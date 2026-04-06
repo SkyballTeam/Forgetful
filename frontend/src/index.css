@@ -386,3 +386,110 @@ button:disabled {
   opacity: 0.1;
   pointer-events: none;
 }
+
+/* ========== MOBILE RESPONSIVENESS ========== */
+
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 2.5rem 1.5rem;
+    max-width: 100%;
+    margin: 0 0.5rem;
+  }
+
+  h1 {
+    font-size: 4rem;
+    letter-spacing: 4px;
+  }
+
+  p {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    font-size: 2rem;
+    padding: 1rem 1.2rem;
+  }
+
+  .original-price {
+    font-size: 1.6rem;
+  }
+
+  .payment-methods {
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+  }
+
+  .error-msg {
+    font-size: 1.2rem;
+  }
+
+  .key-display {
+    font-size: 0.9rem;
+    padding: 0.8rem;
+    word-break: break-all;
+  }
+
+  /* Hide decorative assets on mobile to reduce clutter */
+  .tree-left,
+  .tree-right,
+  .bush-center {
+    display: none;
+  }
+
+  .player-container {
+    width: 60px;
+    height: 60px;
+  }
+
+  .player-character {
+    width: 60px;
+    height: 60px;
+  }
+
+  .fragment-1 { width: 150px; height: 150px; }
+  .fragment-2 { width: 200px; height: 200px; }
+  .fragment-3 { width: 80px; height: 80px; }
+
+  .ground-sphere {
+    bottom: -50vh;
+    height: 60vh;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    padding: 2rem 1rem;
+    border-width: 2px;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  p {
+    font-size: 1.5rem;
+  }
+
+  button {
+    font-size: 1.6rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .original-price {
+    font-size: 1.3rem;
+    margin-right: 8px;
+  }
+
+  .payment-methods {
+    font-size: 1.2rem;
+  }
+
+  .success-box h3 {
+    font-size: 1.5rem !important;
+  }
+}
