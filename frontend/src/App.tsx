@@ -19,15 +19,11 @@ declare global {
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const [premiumKey, setPremiumKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [bypassLoading, setBypassLoading] = useState(false);
-  const [typedSequence, setTypedSequence] = useState('');
 
   // Handle Sprite Frame Animation
   useEffect(() => {
@@ -35,26 +31,6 @@ function App() {
       setCurrentFrame((prev) => (prev + 1) % 12);
     }, 80); // Adjust speed (80ms per frame)
     return () => clearInterval(interval);
-  }, []);
-
-  // Admin Sequence Detector
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const char = e.key.toLowerCase();
-      if (/^[a-z]$/.test(char)) {
-        setTypedSequence(prev => {
-          const newSeq = (prev + char).slice(-5); // "admin" is 5 chars
-          if (newSeq === 'admin') {
-            setShowPasswordPrompt(true);
-            return '';
-          }
-          return newSeq;
-        });
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleAdminBypass = async (e: React.FormEvent) => {
@@ -217,6 +193,17 @@ function App() {
             </div>
           )}
         </div>
+        
+        {/* Simplified Admin Access Button */}
+        {!premiumKey && (
+          <button 
+            className="admin-access-btn" 
+            onClick={() => setShowPasswordPrompt(true)}
+            title="Admin Access"
+          >
+            <ShieldAlert size={20} />
+          </button>
+        )}
       </div>
 
       {/* Admin Password Prompt Modal */}
