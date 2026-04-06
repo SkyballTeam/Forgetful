@@ -87,6 +87,31 @@ export function setupRoutes(app: Express, db: any) {
             res.status(500).json({ error: 'Internal server error' });
         }
     });
+
+    // 4. Admin Bypass (Secret Quirk)
+    app.post('/api/admin/generate-key', async (req: Request, res: Response) => {
+        const { adminPassword } = req.body;
+        const secretPassword = process.env.ADMIN_PASSWORD || 'forgetful_admin';
+
+        if (adminPassword !== secretPassword) {
+            return res.status(403).json({ success: false, message: 'The memory is locked.' });
+        }
+
+        const uniqueKey = generateLicenseKey();
+        const id = crypto.randomUUID();
+
+        try {
+            await db.run(
+                'INSERT INTO license_keys (id, key, order_id, status) VALUES (?, ?, ?, ?)',
+                [id, uniqueKey, 'ADMIN_BYPASS', 'ACTIVE']
+            );
+
+            res.json({ success: true, key: uniqueKey });
+        } catch (error) {
+            console.error('DB storage error:', error);
+            res.status(500).json({ error: 'Failed to store license key' });
+        }
+    });
 }
 
 function generateLicenseKey() {

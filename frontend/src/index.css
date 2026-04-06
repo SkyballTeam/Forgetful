@@ -493,3 +493,102 @@ button:disabled {
     font-size: 1.5rem !important;
   }
 }
+/* ========== ADMIN MODAL STYLES ========== */
+
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.admin-modal {
+  background: linear-gradient(145deg, #2d1b2d 0%, #1a0f1a 100%);
+  border: 2px solid #ff4d4d;
+  padding: 3rem;
+  border-radius: 4px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(255, 77, 77, 0.2);
+  filter: url(#sketchy);
+}
+
+.close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #a08ba0;
+  cursor: pointer;
+  padding: 5px;
+  width: auto;
+  filter: none;
+}
+
+.close-modal:hover {
+  color: #fff;
+  transform: scale(1.1);
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-icon {
+  margin-bottom: 1.5rem;
+  animation: pulse 2s infinite;
+}
+
+.admin-modal h2 {
+  font-family: 'YouMurderer', cursive;
+  font-size: 3.5rem;
+  color: #ff4d4d;
+  margin: 0 0 1rem 0;
+}
+
+.admin-modal p {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+.admin-modal input {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #ff4d4d;
+  color: #fff;
+  font-family: monospace;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  outline: none;
+  border-radius: 2px;
+}
+
+.admin-modal input:focus {
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
+}
+
+.admin-modal button {
+  border-color: #ff4d4d;
+  color: #ff4d4d;
+}
+
+.admin-modal button:hover:not(:disabled) {
+  background: rgba(255, 77, 77, 0.1);
+  box-shadow: 0 0 30px rgba(255, 77, 77, 0.2);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}

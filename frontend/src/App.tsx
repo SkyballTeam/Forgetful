@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Copy, Loader2, Star, Check } from 'lucide-react';
+import { Copy, Loader2, Star, Check, ShieldAlert, X } from 'lucide-react';
 import './index.css';
 
 import deathBush from './assets/death_bush.png';
@@ -23,6 +23,11 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [bypassLoading, setBypassLoading] = useState(false);
+  const [typedSequence, setTypedSequence] = useState('');
 
   // Handle Sprite Frame Animation
   useEffect(() => {
@@ -31,6 +36,51 @@ function App() {
     }, 80); // Adjust speed (80ms per frame)
     return () => clearInterval(interval);
   }, []);
+
+  // Admin Sequence Detector
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const char = e.key.toLowerCase();
+      if (/^[a-z]$/.test(char)) {
+        setTypedSequence(prev => {
+          const newSeq = (prev + char).slice(-5); // "admin" is 5 chars
+          if (newSeq === 'admin') {
+            setShowPasswordPrompt(true);
+            return '';
+          }
+          return newSeq;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleAdminBypass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBypassLoading(true);
+    setError(null);
+
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const response = await axios.post(`${baseUrl}/api/admin/generate-key`, {
+        adminPassword: adminPassword
+      });
+
+      if (response.data.success) {
+        setPremiumKey(response.data.key);
+        setShowPasswordPrompt(false);
+        setIsAdmin(true);
+      }
+    } catch (err: any) {
+      console.error('Admin bypass failed:', err);
+      setError(err.response?.data?.message || 'The path remains blocked.');
+    } finally {
+      setBypassLoading(false);
+      setAdminPassword('');
+    }
+  };
 
   const handlePayment = async () => {
     setLoading(true);
@@ -168,6 +218,34 @@ function App() {
           )}
         </div>
       </div>
+
+      {/* Admin Password Prompt Modal */}
+      {showPasswordPrompt && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal">
+            <button className="close-modal" onClick={() => setShowPasswordPrompt(false)}>
+              <X size={20} />
+            </button>
+            <div className="admin-icon">
+              <ShieldAlert size={40} color="#ff4d4d" />
+            </div>
+            <h2>Admin Access</h2>
+            <p>Speak the secret word to manifest the key...</p>
+            <form onSubmit={handleAdminBypass}>
+              <input 
+                type="password" 
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Enter admin password..."
+                autoFocus
+              />
+              <button type="submit" disabled={bypassLoading}>
+                {bypassLoading ? <Loader2 className="animate-spin" /> : "Manifest Key"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
