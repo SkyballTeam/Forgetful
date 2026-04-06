@@ -1,9 +1,8 @@
 import { Express, Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import { Database } from 'sqlite';
 
-export function setupRoutes(app: Express, db: Database) {
+export function setupRoutes(app: Express, db: any) {
     const razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_mock_id',
         key_secret: process.env.RAZORPAY_KEY_SECRET || 'rzp_test_mock_secret'
