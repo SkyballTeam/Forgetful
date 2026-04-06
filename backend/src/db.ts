@@ -23,6 +23,17 @@ class InMemoryDb {
                 used_at: null
             });
         }
+        // UPDATE status by key
+        else if (sql.includes('UPDATE license_keys')) {
+            const [status, used_at, key] = params;
+            for (const entry of this.keys.values()) {
+                if (entry.key === key) {
+                    entry.status = status;
+                    entry.used_at = used_at;
+                    break;
+                }
+            }
+        }
     }
 
     async get(sql: string, params: any[] = []): Promise<LicenseKey | undefined> {

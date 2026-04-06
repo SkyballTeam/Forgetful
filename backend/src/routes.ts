@@ -69,9 +69,15 @@ export function setupRoutes(app: Express, db: any) {
 
             if (result) {
                 if (result.status === 'ACTIVE') {
+                    // Update key status to USED immediately after successful verification
+                    await db.run(
+                        'UPDATE license_keys SET status = ?, used_at = ? WHERE key = ?',
+                        ['USED', new Date().toISOString(), key]
+                    );
+                    
                     res.json({ valid: true, status: 'ACTIVE' });
                 } else {
-                    res.json({ valid: false, status: result.status });
+                    res.json({ valid: false, status: result.status, message: 'Key has already been used or is inactive' });
                 }
             } else {
                 res.json({ valid: false, message: 'Invalid key' });
