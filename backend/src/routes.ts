@@ -2,7 +2,6 @@ import { Express, Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { Database } from 'sqlite';
-import { v4 as uuidv4 } from 'uuid';
 
 export function setupRoutes(app: Express, db: Database) {
     const razorpay = new Razorpay({
@@ -40,7 +39,7 @@ export function setupRoutes(app: Express, db: Database) {
         if (expectedSignature === razorpay_signature) {
             // Payment verified! Generate unique key
             const uniqueKey = generateLicenseKey();
-            const id = uuidv4();
+            const id = crypto.randomUUID();
 
             try {
                 await db.run(
