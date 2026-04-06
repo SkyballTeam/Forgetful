@@ -1,62 +1,8 @@
 import { Express, Request, Response } from 'express';
-import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
 export function setupRoutes(app: Express, db: any) {
-    const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_mock_id',
-        key_secret: process.env.RAZORPAY_KEY_SECRET || 'rzp_test_mock_secret'
-    });
-
-    // 1. Create order
-    app.post('/api/create-order', async (req: Request, res: Response) => {
-        try {
-            const options = {
-                amount: 20000, // Amount in paise (200.00 INR)
-                currency: "INR",
-                receipt: `receipt_${Date.now()}`
-            };
-
-            const order = await razorpay.orders.create(options);
-            res.json(order);
-        } catch (error) {
-            console.error('Order creation error:', error);
-            res.status(500).json({ error: 'Order creation failed' });
-        }
-    });
-
-    // 2. Verify payment & generate key
-    app.post('/api/verify-payment', async (req: Request, res: Response) => {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || 'rzp_test_mock_secret')
-            .update(body.toString())
-            .digest('hex');
-
-        if (expectedSignature === razorpay_signature) {
-            // Payment verified! Generate unique key
-            const uniqueKey = generateLicenseKey();
-            const id = crypto.randomUUID();
-
-            try {
-                await db.run(
-                    'INSERT INTO license_keys (id, key, order_id, status) VALUES (?, ?, ?, ?)',
-                    [id, uniqueKey, razorpay_order_id, 'ACTIVE']
-                );
-
-                res.json({ success: true, key: uniqueKey });
-            } catch (error) {
-                console.error('DB storage error:', error);
-                res.status(500).json({ error: 'Failed to store license key' });
-            }
-        } else {
-            res.status(400).json({ success: false, message: 'Invalid signature' });
-        }
-    });
-
-    // 3. Verify key for the game
+    // 1. Verify key for the game
     app.post('/api/verify-key', async (req: Request, res: Response) => {
         const { key } = req.body;
 
@@ -88,13 +34,13 @@ export function setupRoutes(app: Express, db: any) {
         }
     });
 
-    // 4. Admin Bypass (Secret Quirk)
+    // 2. Admin Portal (Manual License Generation)
     app.post('/api/admin/generate-key', async (req: Request, res: Response) => {
         const { adminPassword } = req.body;
-        const secretPassword = process.env.ADMIN_PASSWORD || 'forgetful_admin';
+        const secretPassword = process.env.ADMIN_PASSWORD || 'forgetful';
 
         if (adminPassword !== secretPassword) {
-            return res.status(403).json({ success: false, message: 'The memory is locked.' });
+            return res.status(403).json({ success: false, message: 'Unauthorized access. The memory is locked.' });
         }
 
         const uniqueKey = generateLicenseKey();
@@ -103,7 +49,7 @@ export function setupRoutes(app: Express, db: any) {
         try {
             await db.run(
                 'INSERT INTO license_keys (id, key, order_id, status) VALUES (?, ?, ?, ?)',
-                [id, uniqueKey, 'ADMIN_BYPASS', 'ACTIVE']
+                [id, uniqueKey, 'ADMIN_MANUAL', 'ACTIVE']
             );
 
             res.json({ success: true, key: uniqueKey });

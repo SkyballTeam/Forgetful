@@ -619,3 +619,108 @@ button:disabled {
   transform: scale(1.1);
   box-shadow: 0 0 15px rgba(255, 77, 77, 0.1);
 }
+
+/* ========== NEW DOWNLOAD BUTTONS ========== */
+
+.download-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.sketchy-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 2px solid #e5d0e5;
+  background: rgba(45, 27, 45, 0.4);
+  color: #e5d0e5;
+  font-family: 'YouMurderer', cursive;
+  padding: 1rem 1.5rem;
+  font-size: 2.4rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  filter: url(#sketchy);
+  line-height: 1;
+}
+
+.sketchy-link-btn:hover {
+  background: rgba(229, 208, 229, 0.15);
+  color: #fff;
+  transform: scale(1.02) rotate(-1deg);
+  box-shadow: 0 0 30px rgba(229, 208, 229, 0.2);
+}
+
+.footer-note {
+  font-family: 'YouMurderer', cursive;
+  color: #7a5e7a;
+  font-size: 1.8rem;
+  margin-top: 1rem;
+}
+
+/* ========== ADMIN PORTAL STYLES ========== */
+
+.admin-card {
+  border-color: #ff4d4d !important;
+  box-shadow: 0 0 50px rgba(255, 77, 77, 0.1) !important;
+}
+
+.admin-card h2 {
+  font-family: 'YouMurderer', cursive;
+  font-size: 4rem;
+  color: #ff4d4d;
+  margin-bottom: 1rem;
+}
+
+.admin-icon-container {
+  margin-bottom: 1.5rem;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-form input {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #ff4d4d;
+  color: #fff !important;
+  font-family: monospace;
+  font-size: 1.2rem;
+  outline: none;
+  text-align: center;
+}
+
+.secondary-btn {
+  font-size: 1.8rem;
+  margin-top: 1.5rem;
+  opacity: 0.8;
+  width: auto !important;
+  margin: 1.5rem auto 0 auto;
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+  width: auto !important;
+  margin: 2rem auto 0 auto;
+  border: 1px solid rgba(229, 208, 229, 0.2);
+  background: transparent;
+  color: #a08ba0;
+}
+
+.close-btn:hover {
+  color: #fff;
+  border-color: #e5d0e5;
+  background: rgba(229, 208, 229, 0.05);
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Copy, Loader2, Star, Check, ShieldAlert, X } from 'lucide-react';
+import { Copy, Loader2, Check, ShieldAlert, X, Monitor, Smartphone, Key } from 'lucide-react';
 import './index.css';
 
 import deathBush from './assets/death_bush.png';
@@ -11,106 +11,120 @@ const frames = Array.from({ length: 12 }, (_, i) => {
   return new URL(`./assets/${i}.png`, import.meta.url).href;
 });
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
 function App() {
-  const [loading, setLoading] = useState(false);
-  const [premiumKey, setPremiumKey] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
-  const [bypassLoading, setBypassLoading] = useState(false);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   // Handle Sprite Frame Animation
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentFrame((prev) => (prev + 1) % 12);
-    }, 80); // Adjust speed (80ms per frame)
+    }, 80);
     return () => clearInterval(interval);
   }, []);
 
-  const handleAdminBypass = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBypassLoading(true);
-    setError(null);
+  // Simple routing listener
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
 
+  const isAdminPath = currentPath.toLowerCase().endsWith('/admin');
+
+  return (
+    <>
+      <div className="bg-glow">
+        <div className="stars"></div>
+        <div className="clouds"></div>
+        <div className="ground-sphere"></div>
+        
+        <div className="abstract-container">
+          <div className="fragment fragment-1"></div>
+          <div className="fragment fragment-2"></div>
+          <div className="fragment fragment-3"></div>
+        </div>
+
+        <img src={tree3} className="ground-asset tree-left" alt="tree" />
+        <img src={deathBush} className="ground-asset bush-center" alt="bush" />
+        <img src={tree3} className="ground-asset tree-right" alt="tree" />
+
+        <div className="player-container">
+          <div className="player-character">
+             <img src={frames[currentFrame]} alt="running character" />
+          </div>
+        </div>
+      </div>
+
+      <div className="App">
+        {isAdminPath ? <AdminPage /> : <HomePage />}
+      </div>
+    </>
+  );
+}
+
+function HomePage() {
+  const pcLink = import.meta.env.VITE_PC_LINK || '#';
+  const androidLink = import.meta.env.VITE_ANDROID_LINK || '#';
+
+  return (
+    <div className="card">
+      <div className="moon-glow"></div>
+      <h1>Forgetful</h1>
+      <p>restore the memory</p>
+
+      <div className="download-options">
+        <a href={pcLink} className="sketchy-link-btn" target="_blank" rel="noopener noreferrer">
+          <Monitor size={24} />
+          <span>PC VERSION</span>
+        </a>
+        <a href={androidLink} className="sketchy-link-btn" target="_blank" rel="noopener noreferrer">
+          <Smartphone size={24} />
+          <span>ANDROID VERSION</span>
+        </a>
+      </div>
+
+      <div className="footer-note">
+        Requires activation key to play
+      </div>
+    </div>
+  );
+}
+
+function AdminPage() {
+  const [password, setPassword] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [premiumKey, setPremiumKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === 'forgetful') {
+      setIsAuthorized(true);
+      setError(null);
+    } else {
+      setError('The memory is locked. Incorrect word.');
+    }
+  };
+
+  const generateKey = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
       const response = await axios.post(`${baseUrl}/api/admin/generate-key`, {
-        adminPassword: adminPassword
+        adminPassword: password
       });
 
       if (response.data.success) {
         setPremiumKey(response.data.key);
-        setShowPasswordPrompt(false);
-        setIsAdmin(true);
       }
     } catch (err: any) {
-      console.error('Admin bypass failed:', err);
-      setError(err.response?.data?.message || 'The path remains blocked.');
-    } finally {
-      setBypassLoading(false);
-      setAdminPassword('');
-    }
-  };
-
-  const handlePayment = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      const { data: order } = await axios.post(`${baseUrl}/api/create-order`);
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock_id',
-        amount: order.amount,
-        currency: order.currency,
-        name: "Forgetful Premium",
-        description: "Unlock the Full Memory",
-        order_id: order.id,
-        handler: async function (response: any) {
-          try {
-            const verificationResponse = await axios.post(`${baseUrl}/api/verify-payment`, {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
-
-            if (verificationResponse.data.success) {
-              setPremiumKey(verificationResponse.data.key);
-            }
-          } catch (err) {
-            console.error('Payment verification failed:', err);
-            setError('The memory faded... Verification failed.');
-          }
-        },
-        prefill: {
-          name: "Wanderer",
-          email: "wanderer@example.com",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#2d1b2d"
-        }
-      };
-
-      const rzp1 = new window.Razorpay(options);
-      rzp1.on('payment.failed', function (response: any) {
-        setError(`The path is blocked: ${response.error.description}`);
-      });
-
-      rzp1.open();
-    } catch (err) {
-      console.error('Checkout error:', err);
-      setError('Cannot reach the other side. Is the server online?');
+      setError(err.response?.data?.message || 'Connection to the void lost.');
     } finally {
       setLoading(false);
     }
@@ -124,119 +138,61 @@ function App() {
     }
   };
 
+  if (!isAuthorized) {
+    return (
+      <div className="card admin-card">
+        <div className="admin-icon-container">
+          <ShieldAlert size={48} color="#ff4d4d" />
+        </div>
+        <h2>Admin Portal</h2>
+        <p style={{ fontSize: '1.8rem' }}>speak the secret word...</p>
+        <form onSubmit={handleLogin} className="admin-form">
+          <input 
+            type="password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Secret word..."
+            autoFocus
+          />
+          <button type="submit">Unlock Path</button>
+        </form>
+        {error && <div className="error-msg">{error}</div>}
+      </div>
+    );
+  }
+
   return (
-    <>
-      <div className="bg-glow">
-        <div className="stars"></div>
-        <div className="clouds"></div>
-        <div className="ground-sphere"></div>
-        
-        {/* Abstract Elements */}
-        <div className="abstract-container">
-          <div className="fragment fragment-1"></div>
-          <div className="fragment fragment-2"></div>
-          <div className="fragment fragment-3"></div>
-        </div>
-
-        {/* Environment Assets */}
-        <img src={tree3} className="ground-asset tree-left" alt="tree" />
-        <img src={deathBush} className="ground-asset bush-center" alt="bush" />
-        <img src={tree3} className="ground-asset tree-right" alt="tree" />
-
-        <div className="player-container">
-          <div className="player-character">
-             <img src={frames[currentFrame]} alt="running character" />
-          </div>
-        </div>
+    <div className="card admin-card">
+      <div className="admin-icon-container">
+        <Key size={48} color="#e5d0e5" />
       </div>
+      <h2>Manifest Key</h2>
+      <p style={{ fontSize: '1.8rem' }}>forge a new memory fragment</p>
 
-      <div className="App">
-        <div className="card">
-          <div className="moon-glow"></div>
-          
-          <h1>Forgetful</h1>
-          <p>unlock full game</p>
-          
-          {premiumKey ? (
-            <div className="success-box">
-              <h3 style={{ fontFamily: 'Indie Flower', fontSize: '2rem', margin: '0 0 1rem 0' }}>Memory Restored</h3>
-              <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Your unique activation key:</p>
-              
-              <div className="key-display">
-                <span>{premiumKey}</span>
-                <button className="copy-btn" onClick={copyToClipboard}>
-                  {copied ? <Check size={20} color="#e5d0e5" /> : <Copy size={20} color="#e5d0e5" />}
-                </button>
-              </div>
-              
-              <p style={{ fontSize: '1rem', fontStyle: 'italic', opacity: 0.7 }}>
-                Whisper this code in the game settings...
-              </p>
-            </div>
-          ) : (
-            <div>
-              <button onClick={handlePayment} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 size={24} className="animate-spin" style={{ marginRight: '10px' }} />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    Unlock Full Version - <span className="original-price">₹499</span> ₹200
-                  </>
-                )}
-              </button>
-
-              <div className="payment-methods">
-                UPI • Cards • QR Code
-              </div>
-
-              {error && <div className="error-msg">{error}</div>}
-            </div>
-          )}
-        </div>
-        
-        {/* Simplified Admin Access Button */}
-        {!premiumKey && (
-          <button 
-            className="admin-access-btn" 
-            onClick={() => setShowPasswordPrompt(true)}
-            title="Admin Access"
-          >
-            <ShieldAlert size={20} />
-          </button>
-        )}
-      </div>
-
-      {/* Admin Password Prompt Modal */}
-      {showPasswordPrompt && (
-        <div className="admin-modal-overlay">
-          <div className="admin-modal">
-            <button className="close-modal" onClick={() => setShowPasswordPrompt(false)}>
-              <X size={20} />
+      {premiumKey ? (
+        <div className="success-box">
+          <div className="key-display">
+            <span>{premiumKey}</span>
+            <button className="copy-btn" onClick={copyToClipboard}>
+              {copied ? <Check size={20} color="#e5d0e5" /> : <Copy size={20} color="#e5d0e5" />}
             </button>
-            <div className="admin-icon">
-              <ShieldAlert size={40} color="#ff4d4d" />
-            </div>
-            <h2>Admin Access</h2>
-            <p>Speak the secret word to manifest the key...</p>
-            <form onSubmit={handleAdminBypass}>
-              <input 
-                type="password" 
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Enter admin password..."
-                autoFocus
-              />
-              <button type="submit" disabled={bypassLoading}>
-                {bypassLoading ? <Loader2 className="animate-spin" /> : "Manifest Key"}
-              </button>
-            </form>
           </div>
+          <button onClick={() => setPremiumKey(null)} className="secondary-btn">Generate Another</button>
         </div>
+      ) : (
+        <button onClick={generateKey} disabled={loading}>
+          {loading ? <Loader2 className="animate-spin" /> : "Manifest Key"}
+        </button>
       )}
-    </>
+
+      {error && <div className="error-msg">{error}</div>}
+      
+      <div style={{ marginTop: '2rem' }}>
+        <button onClick={() => setIsAuthorized(false)} className="close-btn">
+          <X size={20} /> Close Portal
+        </button>
+      </div>
+    </div>
   );
 }
 
