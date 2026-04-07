@@ -103,11 +103,11 @@ function AdminPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'forgetful') {
+    if (password.trim().length > 0) {
       setIsAuthorized(true);
       setError(null);
     } else {
-      setError('The memory is locked. Incorrect word.');
+      setError('Please enter a word.');
     }
   };
 
