@@ -13,7 +13,7 @@ const frames = Array.from({ length: 12 }, (_, i) => {
 
 function App() {
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
 
   // Handle Sprite Frame Animation
   useEffect(() => {
@@ -26,13 +26,13 @@ function App() {
   // Simple routing listener
   useEffect(() => {
     const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname);
+      setCurrentHash(window.location.hash);
     };
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => window.removeEventListener('hashchange', handleLocationChange);
   }, []);
 
-  const isAdminPath = currentPath.toLowerCase().endsWith('/admin');
+  const isAdminPath = currentHash.toLowerCase().includes('#admin');
 
   return (
     <>
